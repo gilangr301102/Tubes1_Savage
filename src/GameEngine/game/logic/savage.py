@@ -21,6 +21,20 @@ class SavageLogic(BaseLogic):
     
     def is_coordinate_equal(self, a: Position, b: Position):
         return a.x == b.x and a.y == b.y
+    
+    def is_coordinate_can_tackle_by_enemy(self, current_position: Position, enemy_position: Position):
+        if(current_position.x == enemy_position.x and abs(current_position.y-enemy_position.y)==1):
+            return True
+        elif(current_position.y == enemy_position.y and abs(current_position.x-enemy_position.x)==1):
+            return True
+        return False
+
+    def is_available_to_move(self, current_position: Position, delta_x: int, delta_y: int, width: int, height: int):
+        if(current_position.x + delta_x < 0 or current_position.x + delta_x >= width):
+            return False
+        if(current_position.y + delta_y < 0 or current_position.y + delta_y >= height):
+            return False
+        return True
 
     def next_move(self, board_bot: GameObject, board: Board):
         value_move = -1
@@ -35,6 +49,8 @@ class SavageLogic(BaseLogic):
         current_score_inven = board_bot.properties.diamonds
         max_global_value = current_score_inven
         max_val_dirr = [current_score_inven, current_score_inven, current_score_inven, current_score_inven]
+        height = board.height
+        width = board.width
 
         # Store each component items in the board to decrease the time complexity checking
         for i in board.game_objects:
@@ -77,7 +93,9 @@ class SavageLogic(BaseLogic):
                 if(self.is_coordinate_equal(next_pos, enemy_pos.position)):
                     is_move[i] = True
                     max_val_dirr[i] += enemy_pos.properties.diamonds
-        
+                elif(self.is_coordinate_can_tackle_by_enemy(next_pos, enemy_pos.position)):
+                    max_val_dirr[i] = 0
+
         for i in range(4):
             if(max_val_dirr[i] > max_global_value):
                 max_global_value = max_val_dirr[i]
@@ -85,7 +103,7 @@ class SavageLogic(BaseLogic):
 
         if(max_global_value == current_score_inven):
             for i in range(4):
-                if(current_position.x+self.directions[i][0] == base_game_pos.x and current_position.y+self.directions[i][1] == base_game_pos.y):
+                if(self.is_available_to_move(current_position, self.directions[i][0], self.directions[i][1], width, height)):
                     value_move = i
                     break
         
