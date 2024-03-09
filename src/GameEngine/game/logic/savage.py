@@ -44,6 +44,7 @@ class SavageLogic(BaseLogic):
     def next_move(self, board_bot: GameObject, board: Board):
         # Initialize component values
         value_move = -1
+        current_name = board_bot.properties.name
         temp_teleport_pos = []
         temp_diamond_button_pos = deque()
         temp_diamonds1_pos = deque()
@@ -86,7 +87,11 @@ class SavageLogic(BaseLogic):
                 else:
                     temp_diamonds2_pos.append(i.position)
             elif(i.type == "BaseGameObject"):
-                base_game_pos = i.position
+                print("ini Base")
+                print(i)
+                print("----------")
+                if(i.properties.name == current_name):
+                    base_game_pos = i.position
             elif(i.type == "BotGameObject"):
                 if(i.id != current_id):
                     temp_enemy.append(i)
