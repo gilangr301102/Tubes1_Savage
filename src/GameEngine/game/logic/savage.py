@@ -5,9 +5,18 @@ from game.logic.base import BaseLogic
 from game.models import GameObject, Board, Position
 from ..util import get_direction
 from collections import deque
+from dataclasses import dataclass
 
 # MIN_GLOBAL_VALUE = -29
 MAX_GLOBAL_VALUE = 28
+
+@dataclass
+class Item:
+    id: Optional[int] = None
+    position: Optional[Position] = None
+    item_type: Optional[str] = None
+    name: Optional[str] = None
+    value: Optional[int] = None
 
 
 class SavageLogic(BaseLogic):
@@ -53,8 +62,7 @@ class SavageLogic(BaseLogic):
         base_game_pos = None
         current_position = board_bot.position
         current_id = board_bot.id
-        props = board_bot.properties
-        current_diamond = props.diamonds
+        current_diamond = board_bot.properties.diamonds
         candidate_next_diamond = current_diamond
         max_val_dirr = [current_diamond, current_diamond, current_diamond, current_diamond]
         height = board.height
@@ -62,8 +70,11 @@ class SavageLogic(BaseLogic):
         total_value_objektif = [0, 0, 0, 0]
         delta_x = 0
         delta_y = 0
+        is_valid = [False, False, False, False]
+        next_pos = []
+        board_diamond_temp = []
 
-        if props.diamonds == 5:
+        if current_diamond == 5:
             # Move to base
             base = board_bot.properties.base
             self.goal_position = base
@@ -74,6 +85,9 @@ class SavageLogic(BaseLogic):
                 self.goal_position.y,
             )
             return delta_x, delta_y
+
+        for i in range(height):
+            board_diamond_temp.append([Item() for j in range(width)])
 
         # Store each component items in the board to decrease the time complexity checking
         for i in board.game_objects:
@@ -86,62 +100,71 @@ class SavageLogic(BaseLogic):
                     temp_diamonds1_pos.append(i.position)
                 else:
                     temp_diamonds2_pos.append(i.position)
+                board_diamond_temp[i.position.y][i.position.x] = Item(i.id, 
+                                                                    i.position, 
+                                                                    i.type, 
+                                                                    i.properties.name, 
+                                                                    i.properties.points)
             elif(i.type == "BaseGameObject"):
-                print("ini Base")
-                print(i)
-                print("----------")
                 if(i.properties.name == current_name):
                     base_game_pos = i.position
             elif(i.type == "BotGameObject"):
                 if(i.id != current_id):
                     temp_enemy.append(i)
-        is_move = [False, False, False, False]
 
+        # Mapping each diamonds position
+        for i in range(4):
+            temp_next_pos = self.move_position(current_position, self.directions[i][0], self.directions[i][1])
+            next_pos.append(temp_next_pos)
+            if(self.is_valid_coordinate(temp_next_pos, width, height)):
+                is_valid[i] = True
+
+        # Check possibility od diamond 1
         while len(temp_diamonds1_pos) != 0:
             diamond_pos = temp_diamonds1_pos.pop()
             for i in range(4):
-                next_pos = self.move_position(current_position, self.directions[i][0], self.directions[i][1])
-                if(self.is_valid_coordinate(next_pos, width, height)):
-                    distance = self.compute_distance(next_pos, diamond_pos)
+                if(is_valid[i]):
+                    distance = self.compute_distance(next_pos[i], diamond_pos)
                     if(distance==0):
-                        is_move[i] = True
-                        if(props.diamonds + 1 <= 5):
+                        if(current_diamond + 1 <= 5):
                             max_val_dirr[i] = current_diamond + 1
                     else:
                         value = MAX_GLOBAL_VALUE-distance
                         if(value > total_value_objektif[i]):
                             total_value_objektif[i] = value
 
-
+        # Check possiblity of diamond 2
         while len(temp_diamonds2_pos) != 0:
             diamond_pos = temp_diamonds2_pos.pop()
             for i in range(4):
-                next_pos = self.move_position(current_position, self.directions[i][0], self.directions[i][1])
-                if(self.is_valid_coordinate(next_pos, width, height)):
-                    distance = self.compute_distance(next_pos, diamond_pos)
+                if(is_valid[i]):
+                    distance = self.compute_distance(next_pos[i], diamond_pos)
                     if(distance==0):
-                        is_move[i] = True
-                        if(props.diamonds + 2 <= 5):
+                        if(current_diamond + 2 <= 5):
                             max_val_dirr[i] = current_diamond + 2
                     else:
                         value = MAX_GLOBAL_VALUE-distance
                         if(value > total_value_objektif[i]):
                             total_value_objektif[i] = value
-
+        
+        # Compute potential increase diamond of enemy
+        count_potential_increase_diamond_of_enemy = 0
         while len(temp_enemy) != 0:
             enemy = temp_enemy.pop()
             for i in range(4):
-                next_pos = self.move_position(current_position, self.directions[i][0], self.directions[i][1])
-                if(self.is_valid_coordinate(next_pos, width, height)):
+                enemy.position = self.move_position(enemy.position, self.directions[i][0], self.directions[i][1])
+                if(self.is_valid_coordinate(enemy.position, width, height) and board_diamond_temp[enemy.position.y][enemy.position.x].id != None):
+                    count_potential_increase_diamond_of_enemy += 1
+
+                if(is_valid[i]):
                     if(enemy.properties.diamonds>0):
-                        status_on_enemy = self.status_coordinate_on_enemy(next_pos,enemy.position)
+                        status_on_enemy = self.status_coordinate_on_enemy(next_pos[i],enemy.position)
                         if(status_on_enemy==1):
-                            is_move[i] = True
                             max_val_dirr[i] += enemy.properties.diamonds
                         elif(status_on_enemy==-1):
                             max_val_dirr[i] = 0
 
-        # Fungsi Seleksi Value
+        # Fungsi Seleksi
         for i in range(4):
             if(max_val_dirr[i] > candidate_next_diamond):
                 candidate_next_diamond = max_val_dirr[i]
@@ -154,6 +177,7 @@ class SavageLogic(BaseLogic):
                 if(temp_value_max < total_value_objektif[i]):
                     temp_value_max = total_value_objektif[i]
                     value_move = i
+
             if(current_diamond>0):
                 distance_to_base = self.compute_distance(base_game_pos,current_position)
                 if(distance_to_base>0 and MAX_GLOBAL_VALUE-temp_value_max > distance_to_base):
@@ -164,6 +188,16 @@ class SavageLogic(BaseLogic):
                                             base_game_pos.y,
                                         )
                     return delta_x, delta_y
+
+            if(count_potential_increase_diamond_of_enemy>0):
+                while len(temp_diamond_button_pos) != 0:
+                    diamond_button_pos = temp_diamond_button_pos.pop()
+                    for i in range(4):
+                        if(is_valid[i]):
+                            distance = self.compute_distance(next_pos[i], diamond_button_pos)
+                            if(distance==0):
+                                return self.directions[i][0], self.directions[i][1]
+
         if(value_move != -1):
             delta_x = self.directions[value_move][0]
             delta_y = self.directions[value_move][1]
