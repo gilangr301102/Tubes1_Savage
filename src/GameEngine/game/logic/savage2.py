@@ -92,7 +92,7 @@ class SavageLogic(BaseLogic):
         max_val_dirr = [current_diamond, current_diamond, current_diamond, current_diamond]
         height = board.height
         width = board.width
-        total_value_objektif = [0, 0, 0, 0]
+        total_value_objektif = [(0,0), (0,0), (0,0), (0,0)]
         is_valid = [False, False, False, False]
         next_pos = []
 
@@ -116,8 +116,8 @@ class SavageLogic(BaseLogic):
                                 max_val_dirr[i] = current_diamond + 1
                         else:
                             value = MAX_GLOBAL_VALUE-distance
-                            if(value > total_value_objektif[i]):
-                                total_value_objektif[i] = value
+                            if(value > total_value_objektif[i][0]):
+                                total_value_objektif[i] = (value, 1)
         
         def check_possibility_of_diamond2():
             # Melakukan pengecekan terhadap kemungkinan mendapatkan diamond 2
@@ -131,8 +131,8 @@ class SavageLogic(BaseLogic):
                                 max_val_dirr[i] = current_diamond + 2
                         else:
                             value = MAX_GLOBAL_VALUE-distance
-                            if(value > total_value_objektif[i]):
-                                total_value_objektif[i] = value
+                            if(value > total_value_objektif[i][0]):
+                                total_value_objektif[i] = (value, 2)
         
         def check_possibility_enemy():
             count_potential_increase_diamond_of_enemy = 0
@@ -153,16 +153,15 @@ class SavageLogic(BaseLogic):
                                 max_val_dirr[i] = 0
             return count_potential_increase_diamond_of_enemy
         
-        def free_move_to_get_diamond():
+        def move_to_get_potential_diamond():
             # Fungsi untuk melakukan pengecekan terhadap kemungkinan mendekati posisi diamond
-            temp_value_max = total_value_objektif[0]
-            self.value_move = 0
-            for i in range(1,4):
-                if(temp_value_max < total_value_objektif[i]):
-                    temp_value_max = total_value_objektif[i]
+            temp_value_max = -1
+            for i in range(4):
+                if(current_diamond + total_value_objektif[i][1] <= 5 and total_value_objektif[i][0] > temp_value_max):
+                    temp_value_max = total_value_objektif[i][0]
                     self.value_move = i
             return temp_value_max
-        
+
         def selection_function(count_potential_increase_diamond_of_enemy: int, candidate_next_diamond: int = candidate_next_diamond):
             delta_x = 0
             delta_y = 0
@@ -174,7 +173,8 @@ class SavageLogic(BaseLogic):
 
             # Jika tidak bisa mendapatkan diamond (diamond next jumlahnya tetap)
             if(candidate_next_diamond == current_diamond):
-                temp_value_max = free_move_to_get_diamond()
+                temp_value_max = move_to_get_potential_diamond()
+
                 # Kalo udah punya diamond, coba balik ke base
                 if(current_diamond>0):
                     distance_to_base = self.compute_distance(self.base_game_pos,current_position)
@@ -186,6 +186,7 @@ class SavageLogic(BaseLogic):
                                                 self.base_game_pos.y,
                                             )
                         return delta_x, delta_y
+
                 # Kalo enemy punya diamond dan kita deket diamond button
                 # Coba ambil diamond button buat reset diamond sekitar (supaya musuh ga jadi ambil diamond disekitar kiri,kanan,atas,bawah)
                 if(count_potential_increase_diamond_of_enemy>0):
@@ -197,7 +198,7 @@ class SavageLogic(BaseLogic):
                                 if(distance==0):
                                     return self.directions[i][0], self.directions[i][1]
 
-            # Kalo bergerak (Ga diem aja)
+            # Kalo nextnya bakal bergerak (Ga diem aja)
             if(self.value_move != -1):
                 delta_x = self.directions[self.value_move][0]
                 delta_y = self.directions[self.value_move][1]
