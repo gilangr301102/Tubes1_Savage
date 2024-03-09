@@ -113,11 +113,11 @@ class SavageLogic(BaseLogic):
                     pos_geser_arround = self.move_position(pos_after_teleport,self.directions[j][0],self.directions[j][1])
                     if(self.is_valid_coordinate(pos_geser_arround, width, height)):
 
-                        # Kalo ternyata teleport terus ternyata basenya disekitarnya
+                        # Kalo udah teleport, dan ternyata basenya disekitarnya
                         if(current_diamond>0 and pos_geser_arround == self.base_game_pos):
                             total_value_objektif[j] = (MAX_GLOBAL_VALUE-1, current_diamond)
 
-                        # Kalo ternyata ketika teleport, ada diamond disekitarnya dan mencukupi buat diambil
+                        # Kalo udah teleport, ada diamond disekitarnya dan mencukupi buat diambil
                         component_in_arround = self.board_mapping_component[pos_geser_arround.y][pos_geser_arround.x]
                         if(component_in_arround.id != None and current_diamond + component_in_arround.value <= 5 ):
                             total_value_objektif[j] = (MAX_GLOBAL_VALUE-1,component_in_arround.value)
@@ -157,11 +157,14 @@ class SavageLogic(BaseLogic):
             while len(self.enemies) != 0:
                 enemy = self.enemies.pop()
                 for i in range(4): 
-                    # Dilakukan pengecekan terhadap kemungkinan berapa musuh yang bisa dapat diamond untuk dilakukan aksi reset diamond (kalo ada diamond button disekitar)
+                    # Dilakukan pengecekan terhadap state musuh
+                    # Kemungkinan berapa musuh yang bisa dapat diamond untuk dilakukan aksi reset diamond (kalo ada diamond button disekitar)
                     enemy.position = self.move_position(enemy.position, self.directions[i][0], self.directions[i][1])
                     if(self.is_valid_coordinate(enemy.position, width, height) and self.board_mapping_component[enemy.position.y][enemy.position.x].id != None):
                         count_potential_increase_diamond_of_enemy += 1
-                    # Dilakukan pengecekan terhadap kemungkinan musuh bisa ditackle saat musuh tsb punya diamond
+
+                    # Dilakukan pengecekan terhadap bot kita 
+                    # Terhadap musuh bisa ditackle saat musuh tsb punya diamond
                     if(is_valid[i]):
                         if(enemy.properties.diamonds>0):
                             status_on_enemy = self.status_coordinate_on_enemy(next_pos[i],enemy.position)
