@@ -108,19 +108,24 @@ class SavageLogic(BaseLogic):
             # Melakukan pengecekan terhadap kemungkinan teleport
             num_of_teleport = len(self.teleport_pos)
             for i in range(num_of_teleport):
-                pos_after_teleport = self.teleport_pos[(i+1)%num_of_teleport]
-                for j in range(4):
-                    pos_geser_arround = self.move_position(pos_after_teleport,self.directions[j][0],self.directions[j][1])
-                    if(self.is_valid_coordinate(pos_geser_arround, width, height)):
+                for k in range(4):
+                    if(is_valid[k]):
+                        # Kalo ada teleport di sekitar
+                        if(self.compute_distance(next_pos[k], self.teleport_pos[i])==0):
+                            # Cek koordinat di sekitar teleport tujuan
+                            pos_after_teleport = self.teleport_pos[(i+1)%num_of_teleport]
+                            for j in range(4):
+                                pos_geser_arround = self.move_position(pos_after_teleport,self.directions[j][0],self.directions[j][1])
+                                if(self.is_valid_coordinate(pos_geser_arround, width, height)):
 
-                        # Kalo udah teleport, dan ternyata basenya disekitarnya
-                        if(current_diamond>0 and pos_geser_arround == self.base_game_pos):
-                            total_value_objektif[j] = (MAX_GLOBAL_VALUE-1, current_diamond)
+                                    # Kalo udah teleport, dan ternyata basenya disekitarnya
+                                    if(current_diamond>0 and pos_geser_arround == self.base_game_pos):
+                                        total_value_objektif[j] = (MAX_GLOBAL_VALUE-1, current_diamond)
 
-                        # Kalo udah teleport, ada diamond disekitarnya dan mencukupi buat diambil
-                        component_in_arround = self.board_mapping_component[pos_geser_arround.y][pos_geser_arround.x]
-                        if(component_in_arround.id != None and current_diamond + component_in_arround.value <= 5 ):
-                            total_value_objektif[j] = (MAX_GLOBAL_VALUE-1,component_in_arround.value)
+                                    # Kalo udah teleport, ada diamond disekitarnya dan mencukupi buat diambil
+                                    component_in_arround = self.board_mapping_component[pos_geser_arround.y][pos_geser_arround.x]
+                                    if(component_in_arround.id != None and (current_diamond + component_in_arround.value) <= 5 ):
+                                        total_value_objektif[j] = (MAX_GLOBAL_VALUE-1,component_in_arround.value)
 
         def check_possibility_of_diamond1():
             # Melakukan pengecekan terhadap kemungkinan mendapatkan diamond 1
