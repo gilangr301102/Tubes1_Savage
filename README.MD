@@ -38,22 +38,22 @@ The whole car bot implementation program was written in Python.
 
 
 ## Greedy Strategy
-### Strategy 1
+### Strategi Pemrioritasan Pengumpulan Diamond
+Strategi Pemrioritasan Pengumpulan Diamond merupakan strategi untuk memaksimalkan jumlah diamond yang ada di inventory dengan cara mempertimbangkan besar profit yang dihasilkan jika mengambil suatu pergerakan. Melalui strategi ini bot akan memilih untuk bergerak pada grid yang menghasilkan diamond paling banyak dan tidak di-tackle oleh lawan sesaat setelah mengambil diamond tersebut.
 
+### Strategi Pemrioritasan Perlindungan 
+Strategi Pemrioritasan Perlindungan merupakan strategi untuk memaksimalkan penghindaran terhadap pergerakan ke grid yang berpotensi untuk di-tackle oleh lawan jika bergerak menuju grid tersebut. Kemudian, dilakukan juga pengambilan grid yang berpotensi menghasilkan profit. Dengan begitu, strategi ini melindungi bot dari adanya ancaman pencurian diamond oleh bot lawan atau player lain.
 
-### Strategy 2
+### Strategi Pemrioritasan Kembali ke Base
+ Strategi Pemrioritasan Kembali ke Base merupakan strategi untuk memaksimalkan kemungkinan untuk melakukan gerakan perpindahan menuju base berdasarkan jarak terdekat antara bot dan profit, keamanan bot, serta ketersediaan diamond yang akan disimpan ke base pada setiap state yang akan dilalui oleh bot. Strategi ini mencari prioritas utama bot apakah akan kembali ke base atau tidakn sesuai kondisi inventory dan lingkungan sekitar bot.
 
+### Strategi Pemrioritasan Penyerangan terhadap Lawan
+Strategi Pemrioritasan Penyerangan terhadap Lawan merupakan strategi untuk memaksimalkan pengambilan grid yang dapat berpotensi mengambil diamond terbanyak dari bot musuh di sekitar. Dalam hal ini, juga harus diminimalisir kemungkinan bot kita untuk ditabrak oleh Bot lainnya, mengingat pertandingan yang dilakukan melibatkan banyak bot sekaligus.
 
-### Strategy 3
- 
+### Strategi Pemrioritasan Potensi Profit 1 State ke Depan
+Strategi Pemrioritasan Potensi Profit 1 State ke Depan merupakan strategi untuk memaksimalkan jumlah potensi profit yang akan dihasilkan pada 1 state selanjutnya melalui peninjauan terhadap state setelah teleport atau terhadap suatu grid yang pada suatu state tetangganya tidak terdapat diamond. Dengan demikian, sebenarnya state tersebut dapat menghasilkan profit pada state tetangga dari state tetangga tersebut.
 
-### Strategy 4 
-
-
-### Strategy 5
-
-
-### Greedy Algorithm Selection
+### Pemilihan Strategi Greedy
 Berdasarkan eksplorasi alternatif Algoritma Greedy di atas, kelompok kami memutuskan untuk menggabungkan strategi-strategi tersebut. Hal yang menjadi pertimbangan utama atas keputusan itu adalah fakta bahwa setiap strategi di atas hanya efektif dan dapat digunakan dalam beberapa kasus saja untuk setiap rondenya. Dengan demikian, penggabungan strategi-strategi tersebut dinilai lebih mampu secara efektif untuk menangani seluruh kasus atau skema yang ada selama permainan ketimbang memilih salah satu yang terbaik di antaranya.
 
 Pada implementasi program, akhirnya kami menggabungkan dan memodifikasi kelima strategi tersebut. Untuk menangani kasus-kasus tertentu, kami berpikir bahwa diperlukan adanya pengaturan urutan prioritas strategi yang kemudian coba kami kombinasikan untuk menemukan mana kombinasi urutan yang paling optimal. Hasil yang kelompok dapatkan ialah kombinasi strategi dengan urutan sebagai berikut: 
@@ -62,25 +62,18 @@ Urutan prioritas yang kami tentukan terakhir kali berasal dari proses trial and 
 
 
 ## Setup
-### Installation
+### Installation & Requirement
 - Download and install [Python](https://www.python.org/downloads/)
 - Download and install [NodeJS](https://nodejs.org/en/download/)
 - Download and install Yarn
 ```
 npm install --global yarn
 ```
-
-### Requirement
 - Download the whole folders and files in this repository or do clone the repository
 - Download Diamonds [Game Engine](https://github.com/haziqam/tubes1-IF2211-game-engine/releases/tag/v1.1.0)
 - Download Diamonds [Starter Pack](https://github.com/haziqam/tubes1-IF2211-bot-starter-pack/releases/tag/v1.0.1)
 
-### Setup
-
-
-### Execution
-
-
+### Setup & Execution
 The complete setup instructions is written on [Get Started with Diamonds](https://docs.google.com/document/d/1L92Axb89yIkom0b24D350Z1QAr8rujvHof7-kXRAp7c/edit).
 
 
