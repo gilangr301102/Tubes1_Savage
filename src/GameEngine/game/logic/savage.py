@@ -111,19 +111,19 @@ class SavageLogic(BaseLogic):
             for i in range(num_of_teleport):
                 for k in range(4):
                     if(is_valid[k]):
-                        # Kalo ada teleport di sekitar
+                        # Kalo ada teleport di sekitar teleport koordinate bot
                         if(self.compute_distance(next_pos[k], self.teleport_pos[i])==0):
-                            # Cek koordinat di sekitar teleport tujuan
+                            # Cek koordinat di sekitar teleport tujuan apakah ada profit
                             pos_after_teleport = self.teleport_pos[(i+1)%num_of_teleport]
                             for j in range(4):
                                 pos_geser_arround = self.move_position(pos_after_teleport,self.directions[j][0],self.directions[j][1])
-                                if(self.is_valid_coordinate(pos_geser_arround, width, height)):
+                                if(self.is_valid_coordinate(pos_geser_arround, width, height)): # Cek koordinat geser tersebut valid atau tidak
 
-                                    # Kalo udah teleport, dan ternyata basenya disekitarnya
+                                    # Kondisi pengecekan kalo udah teleport, dan ternyata basenya disekitarnya, masukkan sebagai profit
                                     if(current_diamond>0 and pos_geser_arround == self.base_game_pos):
                                         total_value_objektif[j] = (MAX_GLOBAL_VALUE-1, current_diamond)
 
-                                    # Kalo udah teleport, ada diamond disekitarnya dan mencukupi buat diambil
+                                    # Kalo udah teleport, ada diamond disekitarnya dan mencukupi buat diambil, masukkan sebagai profit
                                     component_in_arround = self.board_mapping_component[pos_geser_arround.y][pos_geser_arround.x]
                                     if(component_in_arround.id != None and (current_diamond + component_in_arround.value) <= 5 ):
                                         total_value_objektif[j] = (MAX_GLOBAL_VALUE-1,component_in_arround.value)
@@ -136,13 +136,13 @@ class SavageLogic(BaseLogic):
                 for i in range(4):
                     if(is_valid[i]):
                         distance = self.compute_distance(next_pos[i], diamond_pos)
-                        if(distance==0): # Kalo nextnya di posisi diamond
-                            if(current_diamond + 1 <= 5):
+                        if(current_diamond + 1 <= 5): # Kalo masih bisa nampung gass aja
+                            if(distance==0): # Kalo nextnya di posisi diamond
                                 max_val_dirr[i] = current_diamond + 1
-                        else: # Kalo engga hitung possibility profitnya dengan distance dan pointnya
-                            value = MAX_GLOBAL_VALUE-distance
-                            if(value > total_value_objektif[i][0]):
-                                total_value_objektif[i] = (value, 1)
+                            else: # Kalo engga hitung possibility profitnya dengan distance dan pointnya
+                                value = MAX_GLOBAL_VALUE-distance
+                                if(value > total_value_objektif[i][0]):
+                                    total_value_objektif[i] = (value, 1)
         
         def check_possibility_of_diamond2():
             # Melakukan pengecekan terhadap kemungkinan mendapatkan diamond 2
@@ -152,13 +152,13 @@ class SavageLogic(BaseLogic):
                 for i in range(4):
                     if(is_valid[i]):
                         distance = self.compute_distance(next_pos[i], diamond_pos)
-                        if(distance==0): # Kalo nextnya di posisi diamond
-                            if(current_diamond + 2 <= 5):
+                        if(current_diamond + 2 <= 5): # Kalo masih bisa nampung, gass aja
+                            if(distance==0): # Kalo nextnya di posisi diamond
                                 max_val_dirr[i] = current_diamond + 2
-                        else: # Kalo engga hitung possibility profitnya dengan distance dan pointnya
-                            value = MAX_GLOBAL_VALUE-distance
-                            if(value > total_value_objektif[i][0]):
-                                total_value_objektif[i] = (value, 2)
+                            else: # Kalo engga hitung possibility profitnya dengan distance dan pointnya
+                                value = MAX_GLOBAL_VALUE-distance
+                                if(value > total_value_objektif[i][0]):
+                                    total_value_objektif[i] = (value, 2)
         
         def check_possibility_enemy():
             # Time Complexity O(4*N)
@@ -211,10 +211,10 @@ class SavageLogic(BaseLogic):
             if(candidate_next_diamond == current_diamond):
                 temp_value_max = move_to_get_potential_profit_to_move()
 
-                # Kalo udah punya diamond, coba balik ke base
+                # Kalo udah punya diamond, coba balik ke base sambil bandingin lebih worth balik atau cari potensi dapet diamond
                 if(current_diamond>0):
                     distance_to_base = self.compute_distance(self.base_game_pos,current_position)
-                    if(distance_to_base>0 and MAX_GLOBAL_VALUE-temp_value_max >= distance_to_base):
+                    if(distance_to_base>0 and MAX_GLOBAL_VALUE-temp_value_max >= distance_to_base): # Profit balik base lebih baik dari maximum sementara profit
                         delta_x, delta_y = get_direction(
                                                 current_position.x,
                                                 current_position.y,
