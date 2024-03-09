@@ -42,6 +42,7 @@ class SavageLogic(BaseLogic):
         return True
 
     def next_move(self, board_bot: GameObject, board: Board):
+        # Initialize component values
         value_move = -1
         temp_teleport_pos = []
         temp_diamond_button_pos = deque()
@@ -58,6 +59,8 @@ class SavageLogic(BaseLogic):
         height = board.height
         width = board.width
         total_value_objektif = [0, 0, 0, 0]
+        delta_x = 0
+        delta_y = 0
 
         if props.diamonds == 5:
             # Move to base
@@ -133,6 +136,7 @@ class SavageLogic(BaseLogic):
                         elif(status_on_enemy==-1):
                             max_val_dirr[i] = 0
 
+        # Fungsi Seleksi Value
         for i in range(4):
             if(max_val_dirr[i] > candidate_next_diamond):
                 candidate_next_diamond = max_val_dirr[i]
@@ -147,16 +151,16 @@ class SavageLogic(BaseLogic):
                     value_move = i
             if(current_diamond>0):
                 distance_to_base = self.compute_distance(base_game_pos,current_position)
-                if(MAX_GLOBAL_VALUE-temp_value_max > distance_to_base):
+                if(distance_to_base>0 and MAX_GLOBAL_VALUE-temp_value_max > distance_to_base):
                     delta_x, delta_y = get_direction(
                                             current_position.x,
                                             current_position.y,
-                                            distance_to_base.x,
-                                            distance_to_base.y,
+                                            base_game_pos.x,
+                                            base_game_pos.y,
                                         )
                     return delta_x, delta_y
-        
-        delta_x = self.directions[value_move][0]
-        delta_y = self.directions[value_move][1]
+        if(value_move != -1):
+            delta_x = self.directions[value_move][0]
+            delta_y = self.directions[value_move][1]
 
         return delta_x, delta_y
