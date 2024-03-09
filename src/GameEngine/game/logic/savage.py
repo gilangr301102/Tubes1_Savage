@@ -121,12 +121,12 @@ class SavageLogic(BaseLogic):
 
                                     # Kondisi pengecekan kalo udah teleport, dan ternyata basenya disekitarnya, masukkan sebagai profit
                                     if(current_diamond>0 and pos_geser_arround == self.base_game_pos):
-                                        total_value_objektif[j] = (MAX_GLOBAL_VALUE-1, current_diamond)
+                                        total_value_objektif[j] = (MAX_GLOBAL_VALUE-2, current_diamond) # Profitnya MAX_GLOBAL_VALUE-2 karena jaraknya 2 terhitung sebelum teleport
 
                                     # Kalo udah teleport, ada diamond disekitarnya dan mencukupi buat diambil, masukkan sebagai profit
                                     component_in_arround = self.board_mapping_component[pos_geser_arround.y][pos_geser_arround.x]
                                     if(component_in_arround.id != None and (current_diamond + component_in_arround.value) <= 5 ):
-                                        total_value_objektif[j] = (MAX_GLOBAL_VALUE-1,component_in_arround.value)
+                                        total_value_objektif[j] = (MAX_GLOBAL_VALUE-2,component_in_arround.value) # Profitnya MAX_GLOBAL_VALUE-2 karena jaraknya 2 terhitung sebelum teleport
 
         def check_possibility_of_diamond1():
             # Melakukan pengecekan terhadap kemungkinan mendapatkan diamond 1
