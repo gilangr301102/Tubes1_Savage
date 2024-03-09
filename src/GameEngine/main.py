@@ -8,7 +8,7 @@ from game.bot_handler import BotHandler
 from game.logic.random import RandomLogic
 from game.util import *
 from game.logic.base import BaseLogic
-from game.logic.savage import SavageLogic
+from game.logic.savage2 import SavageLogic
 
 init()
 BASE_URL = "http://localhost:3000/api"
