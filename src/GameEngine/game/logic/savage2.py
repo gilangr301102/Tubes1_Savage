@@ -30,7 +30,7 @@ class SavageLogic(BaseLogic):
         self.diamond2_pos = []
         self.enemies = []
         self.base_game_pos = None
-        self.board_diamond_temp = []
+        self.board_mapping_component = []
 
     def move_position(self, current_position: Position, delta_x: int, delta_y: int):
         # Mekakukan gerakan dengan mengembalikan posisi baru
@@ -70,7 +70,7 @@ class SavageLogic(BaseLogic):
                     self.diamond1_pos.append(i.position)
                 else:
                     self.diamond2_pos.append(i.position)
-                self.board_diamond_temp[i.position.y][i.position.x] = Item(i.id, 
+                self.board_mapping_component[i.position.y][i.position.x] = Item(i.id, 
                                                                     i.position, 
                                                                     i.type, 
                                                                     i.properties.name, 
@@ -103,6 +103,24 @@ class SavageLogic(BaseLogic):
                 next_pos.append(temp_next_pos)
                 if(self.is_valid_coordinate(temp_next_pos, width, height)):
                     is_valid[i] = True
+
+        def check_possibility_teleport():
+            # Melakukan pengecekan terhadap kemungkinan teleport
+            num_of_teleport = len(self.teleport_pos)
+            for i in range(num_of_teleport):
+                pos_after_teleport = self.teleport_pos[(i+1)%num_of_teleport]
+                for j in range(4):
+                    pos_geser_arround = self.move_position(pos_after_teleport,self.directions[j][0],self.directions[j][1])
+                    if(self.is_valid_coordinate(pos_geser_arround, width, height)):
+
+                        # Kalo ternyata teleport terus ternyata basenya disekitarnya
+                        if(current_diamond>0 and pos_geser_arround == self.base_game_pos):
+                            total_value_objektif[j] = (MAX_GLOBAL_VALUE-1, current_diamond)
+
+                        # Kalo ternyata ketika teleport, ada diamond disekitarnya dan mencukupi buat diambil
+                        component_in_arround = self.board_mapping_component[pos_geser_arround.y][pos_geser_arround.x]
+                        if(component_in_arround.id != None and current_diamond + component_in_arround.value <= 5 ):
+                            total_value_objektif[j] = (MAX_GLOBAL_VALUE-1,component_in_arround.value)
 
         def check_possibility_of_diamond1():
             # Melakukan pengecekan terhadap kemungkinan mendapatkan diamond 1
@@ -141,7 +159,7 @@ class SavageLogic(BaseLogic):
                 for i in range(4): 
                     # Dilakukan pengecekan terhadap kemungkinan berapa musuh yang bisa dapat diamond untuk dilakukan aksi reset diamond (kalo ada diamond button disekitar)
                     enemy.position = self.move_position(enemy.position, self.directions[i][0], self.directions[i][1])
-                    if(self.is_valid_coordinate(enemy.position, width, height) and self.board_diamond_temp[enemy.position.y][enemy.position.x].id != None):
+                    if(self.is_valid_coordinate(enemy.position, width, height) and self.board_mapping_component[enemy.position.y][enemy.position.x].id != None):
                         count_potential_increase_diamond_of_enemy += 1
                     # Dilakukan pengecekan terhadap kemungkinan musuh bisa ditackle saat musuh tsb punya diamond
                     if(is_valid[i]):
@@ -153,13 +171,17 @@ class SavageLogic(BaseLogic):
                                 max_val_dirr[i] = 0
             return count_potential_increase_diamond_of_enemy
         
-        def move_to_get_potential_diamond():
+        def move_to_get_potential_profit_to_move():
             # Fungsi untuk melakukan pengecekan terhadap kemungkinan mendekati posisi diamond
             temp_value_max = -1
+            point_max = -1
             for i in range(4):
-                if(current_diamond + total_value_objektif[i][1] <= 5 and total_value_objektif[i][0] > temp_value_max):
-                    temp_value_max = total_value_objektif[i][0]
-                    self.value_move = i
+                if(current_diamond + total_value_objektif[i][1] <= 5):
+                    if(total_value_objektif[i][0] > temp_value_max or 
+                       (total_value_objektif[i][0] == temp_value_max and total_value_objektif[i][1] > point_max)):
+                        temp_value_max = total_value_objektif[i][0]
+                        point_max = total_value_objektif[i][1]
+                        self.value_move = i
             return temp_value_max
 
         def selection_function(count_potential_increase_diamond_of_enemy: int, candidate_next_diamond: int = candidate_next_diamond):
@@ -173,7 +195,7 @@ class SavageLogic(BaseLogic):
 
             # Jika tidak bisa mendapatkan diamond (diamond next jumlahnya tetap)
             if(candidate_next_diamond == current_diamond):
-                temp_value_max = move_to_get_potential_diamond()
+                temp_value_max = move_to_get_potential_profit_to_move()
 
                 # Kalo udah punya diamond, coba balik ke base
                 if(current_diamond>0):
@@ -219,11 +241,13 @@ class SavageLogic(BaseLogic):
             return delta_x, delta_y
 
         for i in range(height):
-            self.board_diamond_temp.append([Item() for j in range(width)])
+            self.board_mapping_component.append([Item() for j in range(width)])
 
         self.store_all_component(board, current_name, current_id)
         
         mapping_diamonds()
+
+        check_possibility_teleport()
 
         check_possibility_of_diamond1()
 
