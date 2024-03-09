@@ -24,6 +24,12 @@ class SavageLogic(BaseLogic):
         self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         self.goal_position: Optional[Position] = None
         self.current_direction = 0
+        self.value_move = -1
+        self.teleport_pos = []
+        self.diamond_button_pos = []
+        self.diamond1_pos = []
+        self.diamond2_pos = []
+        self.enemies = []
 
     def move_position(self, current_position: Position, delta_x: int, delta_y: int):
         return Position(current_position.y + delta_y,current_position.x + delta_x)
@@ -52,13 +58,7 @@ class SavageLogic(BaseLogic):
 
     def next_move(self, board_bot: GameObject, board: Board):
         # Initialize component values
-        value_move = -1
         current_name = board_bot.properties.name
-        temp_teleport_pos = []
-        temp_diamond_button_pos = deque()
-        temp_diamonds1_pos = deque()
-        temp_diamonds2_pos = deque()
-        temp_enemy = deque()
         base_game_pos = None
         current_position = board_bot.position
         current_id = board_bot.id
@@ -92,14 +92,14 @@ class SavageLogic(BaseLogic):
         # Store each component items in the board to decrease the time complexity checking
         for i in board.game_objects:
             if(i.type == "TeleportGameObject"):
-                temp_teleport_pos.append(i.position)
+                self.teleport_pos.append(i.position)
             elif(i.type == "DiamondButtonGameObject"):
-                temp_diamond_button_pos.append(i.position)
+                self.diamond_button_pos.append(i.position)
             elif(i.type == "DiamondGameObject"):
                 if(i.properties.points == 1):
-                    temp_diamonds1_pos.append(i.position)
+                    self.diamond1_pos.append(i.position)
                 else:
-                    temp_diamonds2_pos.append(i.position)
+                    self.diamond2_pos.append(i.position)
                 board_diamond_temp[i.position.y][i.position.x] = Item(i.id, 
                                                                     i.position, 
                                                                     i.type, 
@@ -110,7 +110,7 @@ class SavageLogic(BaseLogic):
                     base_game_pos = i.position
             elif(i.type == "BotGameObject"):
                 if(i.id != current_id):
-                    temp_enemy.append(i)
+                    self.enemies.append(i)
 
         # Mapping each diamonds position
         for i in range(4):
@@ -120,8 +120,8 @@ class SavageLogic(BaseLogic):
                 is_valid[i] = True
 
         # Check possibility od diamond 1
-        while len(temp_diamonds1_pos) != 0:
-            diamond_pos = temp_diamonds1_pos.pop()
+        while len(self.diamond1_pos) != 0:
+            diamond_pos = self.diamond1_pos.pop()
             for i in range(4):
                 if(is_valid[i]):
                     distance = self.compute_distance(next_pos[i], diamond_pos)
@@ -134,8 +134,8 @@ class SavageLogic(BaseLogic):
                             total_value_objektif[i] = value
 
         # Check possiblity of diamond 2
-        while len(temp_diamonds2_pos) != 0:
-            diamond_pos = temp_diamonds2_pos.pop()
+        while len(self.diamond2_pos) != 0:
+            diamond_pos = self.diamond2_pos.pop()
             for i in range(4):
                 if(is_valid[i]):
                     distance = self.compute_distance(next_pos[i], diamond_pos)
@@ -149,8 +149,8 @@ class SavageLogic(BaseLogic):
         
         # Compute potential increase diamond of enemy
         count_potential_increase_diamond_of_enemy = 0
-        while len(temp_enemy) != 0:
-            enemy = temp_enemy.pop()
+        while len(self.enemies) != 0:
+            enemy = self.enemies.pop()
             for i in range(4):
                 enemy.position = self.move_position(enemy.position, self.directions[i][0], self.directions[i][1])
                 if(self.is_valid_coordinate(enemy.position, width, height) and board_diamond_temp[enemy.position.y][enemy.position.x].id != None):
@@ -168,15 +168,15 @@ class SavageLogic(BaseLogic):
         for i in range(4):
             if(max_val_dirr[i] > candidate_next_diamond):
                 candidate_next_diamond = max_val_dirr[i]
-                value_move = i
+                self.value_move = i
 
         if(candidate_next_diamond == current_diamond):
             temp_value_max = total_value_objektif[0]
-            value_move = 0
+            self.value_move = 0
             for i in range(1,4):
                 if(temp_value_max < total_value_objektif[i]):
                     temp_value_max = total_value_objektif[i]
-                    value_move = i
+                    self.value_move = i
 
             if(current_diamond>0):
                 distance_to_base = self.compute_distance(base_game_pos,current_position)
@@ -190,16 +190,16 @@ class SavageLogic(BaseLogic):
                     return delta_x, delta_y
 
             if(count_potential_increase_diamond_of_enemy>0):
-                while len(temp_diamond_button_pos) != 0:
-                    diamond_button_pos = temp_diamond_button_pos.pop()
+                while len(self.diamond_button_pos) != 0:
+                    diamond_button_pos = self.diamond_button_pos.pop()
                     for i in range(4):
                         if(is_valid[i]):
                             distance = self.compute_distance(next_pos[i], diamond_button_pos)
                             if(distance==0):
                                 return self.directions[i][0], self.directions[i][1]
 
-        if(value_move != -1):
-            delta_x = self.directions[value_move][0]
-            delta_y = self.directions[value_move][1]
+        if(self.value_move != -1):
+            delta_x = self.directions[self.value_move][0]
+            delta_y = self.directions[self.value_move][1]
 
         return delta_x, delta_y
