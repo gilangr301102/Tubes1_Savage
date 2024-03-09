@@ -173,13 +173,12 @@ class SavageLogic(BaseLogic):
                         count_potential_increase_diamond_of_enemy += 1
 
                     # Dilakukan pengecekan terhadap bot kita 
-                    # Terhadap musuh bisa ditackle saat musuh tsb punya diamond
                     if(is_valid[i]):
                         if(enemy.properties.diamonds>0):
                             status_on_enemy = self.status_coordinate_on_enemy(next_pos[i],enemy.position)
-                            if(status_on_enemy==1):
+                            if(status_on_enemy==1): # Kalo profit
                                 max_val_dirr[i] += enemy.properties.diamonds
-                            elif(status_on_enemy==-1):
+                            elif(status_on_enemy==-1): # Kalo rugi
                                 max_val_dirr[i] = 0
             return count_potential_increase_diamond_of_enemy
         
@@ -201,7 +200,7 @@ class SavageLogic(BaseLogic):
             # Time Complexity O(4*N)
             delta_x = 0
             delta_y = 0
-            # Check possibility dari kemungkinan value dari diamond yang diperoleh pada 4 arah
+            # Check possibility dari kemungkinan value dari diamond yang diperoleh pada salah satu dari 4 arah
             for i in range(4):
                 if(max_val_dirr[i] > candidate_next_diamond):
                     candidate_next_diamond = max_val_dirr[i]
